@@ -592,6 +592,8 @@ sub create_xrefs {
   print "End.\n" if ($verbose);
 
 #TODO - currently include records from other species - filter on OX line??
+
+  return;
 } ## end sub create_xrefs
 
 
