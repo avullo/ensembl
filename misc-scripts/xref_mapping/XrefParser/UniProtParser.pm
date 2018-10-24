@@ -43,9 +43,8 @@ sub run {
   my $species_name = $ref_arg->{species};
   my $files        = $ref_arg->{files};
   my $release_file = $ref_arg->{rel_file};
-  my $verbose      = $ref_arg->{verbose};
-  my $dbi          = $ref_arg->{dbi};
-  $dbi = $self->dbi unless defined $dbi;
+  my $verbose      = $ref_arg->{verbose} // 0;
+  my $dbi          = $ref_arg->{dbi} // $self->dbi;
 
   if ( ( !defined $source_id ) or
        ( !defined $species_id ) or
@@ -54,7 +53,6 @@ sub run {
     croak
       "Need to pass source_id, species_id, files and rel_file as pairs";
   }
-  $verbose |= 0;
 
   my $file = @{$files}[0];
 
