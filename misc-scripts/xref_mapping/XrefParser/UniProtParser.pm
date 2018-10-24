@@ -79,15 +79,14 @@ sub run {
     $self->get_source_id_for_source_name( 'Uniprot/SPTREMBL', 'direct',
                                           $dbi );
 
-  print "SwissProt source id for $file: $sp_source_id\n"  if ($verbose);
-  print "SpTREMBL source id for $file: $sptr_source_id\n" if ($verbose);
-  print
-"SpTREMBL protein_evidence > 2 source id for $file: $sptr_non_display_source_id\n"
-    if ($verbose);
-  print "SwissProt direct source id for $file: $sp_direct_source_id\n"
-    if ($verbose);
-  print "SpTREMBL direct source id for $file: $sptr_direct_source_id\n"
-    if ($verbose);
+  if ( $verbose ) {
+    print "SwissProt source id for $file: $sp_source_id\n"
+      . "SpTREMBL source id for $file: $sptr_source_id\n"
+      . 'SpTREMBL protein_evidence > 2 source id '
+      . "for $file: $sptr_non_display_source_id\n"
+      . "SwissProt direct source id for $file: $sp_direct_source_id\n"
+      . "SpTREMBL direct source id for $file: $sptr_direct_source_id\n";
+  }
 
   $self->create_xrefs( $sp_source_id,
                        $sptr_source_id,
@@ -106,11 +105,15 @@ sub run {
     while ( defined( my $line = $release_io->getline() ) ) {
       if ( $line =~ m#(UniProtKB/Swiss-Prot Release .*)# ) {
         $sp_release = $1;
-        print "Swiss-Prot release is '$sp_release'\n" if ($verbose);
+        if ( $verbose ) {
+          print "Swiss-Prot release is '$sp_release'\n";
+        }
       }
       elsif ( $line =~ m#(UniProtKB/TrEMBL Release .*)# ) {
         $sptr_release = $1;
-        print "SpTrEMBL release is '$sptr_release'\n" if ($verbose);
+        if ( $verbose ) {
+          print "SpTrEMBL release is '$sptr_release'\n";
+        }
       }
     }
     $release_io->close();
@@ -224,9 +227,9 @@ sub create_xrefs {
     my @accessions;
     foreach my $line (@all_lines) {
       my ($accessions_only) = $line =~ /^AC\s+(.+)/;
-      push( @accessions, ( split /;\s*/, $accessions_only ) )
-        if ($accessions_only);
-
+      if ( $accessions_only ) {
+        push( @accessions, ( split /;\s*/, $accessions_only ) )
+      }
     }
 
     if ( lc( $accessions[0] ) eq "unreviewed" ) {
@@ -292,19 +295,24 @@ sub create_xrefs {
 
       # get the data
       if ( $line =~ /^DE   RecName: Full=(.*);/ ) {
-        $name .= '; '
-          if $name ne q{};    #separate multiple sub-names with a '; '
+        if ( $name ne q{} ) {
+          #separate multiple sub-names with a '; '
+          $name .= '; '
+        }
         $name .= $1;
       }
       elsif ( $line =~ /RecName: Full=(.*);/ ) {
-        $description .= ' '
-          if $description ne
-          q{};    #separate the description bit with just a space
+        if ( $description ne q{} ) {
+          #separate the description bit with just a space
+          $description .= ' '
+        }
         $description .= $1;
       }
       elsif ( $line =~ /SubName: Full=(.*);/ ) {
-        $name .= '; '
-          if $name ne q{};    #separate multiple sub-names with a '; '
+        if ( $name ne q{} ) {
+          #separate multiple sub-names with a '; '
+          $name .= '; '
+        }
         $name .= $1;
       }
 
@@ -564,30 +572,33 @@ sub create_xrefs {
 
   } ## end while ( $_ = $uniprot_io->...)
 
-  $self->upload_xref_object_graphs( \@xrefs, $dbi )
-    if scalar(@xrefs) > 0;
+  if ( scalar @xrefs > 0 ) {
+    $self->upload_xref_object_graphs( \@xrefs, $dbi );
+  }
 
   $uniprot_io->close();
 
-  print
-"Read $num_sp SwissProt xrefs, $num_sptr SPTrEMBL xrefs with protein evidence codes 1-2, and $num_sptr_non_display SPTrEMBL xrefs with protein evidence codes > 2 from $file\n"
-    if ($verbose);
-  print
-"Added $num_direct_sp direct SwissProt xrefs and $num_direct_sptr direct SPTrEMBL xrefs\n"
-    if ($verbose);
-  print
-"Found $num_sp_pred predicted SwissProt xrefs and $num_sptr_pred predicted SPTrEMBL xrefs\n"
-    if ( ( $num_sp_pred > 0 || $num_sptr_pred > 0 ) and $verbose );
-  print
-"Skipped $ensembl_derived_protein_count ensembl annotations as Gene names\n";
+  if ( $verbose ) {
+    print "Read $num_sp SwissProt xrefs, $num_sptr SPTrEMBL xrefs with protein "
+      . "evidence codes 1-2, and $num_sptr_non_display SPTrEMBL xrefs with "
+      . "protein evidence codes > 2 from $file\n"
+      . "Added $num_direct_sp direct SwissProt xrefs "
+      . "and $num_direct_sptr direct SPTrEMBL xrefs\n";
 
-  #  print "$kount gene anmes added\n";
+    if ( $num_sp_pred > 0 || $num_sptr_pred > 0 ) {
+      print
+        "Found $num_sp_pred predicted SwissProt xrefs and $num_sptr_pred predicted SPTrEMBL xrefs\n"
+    }
 
-  print "Added the following dependent xrefs:-\n" if ($verbose);
-  foreach my $key ( keys %dependent_xrefs ) {
-    print $key. "\t" . $dependent_xrefs{$key} . "\n" if ($verbose);
+    print "Added the following dependent xrefs:-\n";
+    foreach my $key ( keys %dependent_xrefs ) {
+      print $key. "\t" . $dependent_xrefs{$key} . "\n";
+    }
+    print "End.\n";
   }
-  print "End.\n" if ($verbose);
+
+  print
+    "Skipped $ensembl_derived_protein_count ensembl annotations as Gene names\n";
 
 #TODO - currently include records from other species - filter on OX line??
 
