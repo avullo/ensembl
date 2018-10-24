@@ -208,10 +208,10 @@ sub create_xrefs {
 # set accession (and synonyms if more than one)
 # AC line may have primary accession and possibly several ; separated synonyms
 # May also be more than one AC line
-    my ($acc) = $_ =~
+    my ($ac_line) = $_ =~
       /(\nAC\s+.+)/s;    # will match first AC line and everything else
 
-    my @all_lines = split /\n/, $acc;
+    my @all_lines = split /\n/, $ac_line;
 
     # Check for CC (caution) lines containing certain text
     # If sequence is from Ensembl, do not use
@@ -234,7 +234,7 @@ sub create_xrefs {
 
     if ( lc( $accessions[0] ) eq "unreviewed" ) {
       print
-"WARNING: entries with accession of $acc not allowed will be skipped\n";
+"WARNING: entries with accession of ${ac_line} not allowed will be skipped\n";
       next;
     }
     $xref->{INFO_TYPE} = "SEQUENCE_MATCH";
@@ -390,10 +390,10 @@ sub create_xrefs {
         {    #/s for multi-line entries ; is the delimiter
           # Example line
           # GN   Name=ctrc {ECO:0000313|Xenbase:XB-GENE-5790348};
-          my $name = $1;
-          $name =~ s/\s+$//g
+          my $gn_name = $1;
+          $gn_name =~ s/\s+$//g
             ; # Remove white spaces that are left over at the end if there was an evidence code
-          $depe{LABEL} = $name
+          $depe{LABEL} = $gn_name
             ; # leave name as is, upper/lower case is relevant in gene names
           $depe{ACCESSION} =
             $self->get_name( $xref->{ACCESSION}, $depe{LABEL} );
