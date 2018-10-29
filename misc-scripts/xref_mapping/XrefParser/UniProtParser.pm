@@ -29,8 +29,6 @@ package XrefParser::UniProtParser;
 use strict;
 use warnings;
 use Carp;
-use POSIX qw(strftime);
-use File::Basename;
 
 use parent qw( XrefParser::BaseParser );
 
