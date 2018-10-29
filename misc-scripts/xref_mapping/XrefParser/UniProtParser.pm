@@ -86,23 +86,21 @@ sub run {
   }
 
   if ( $verbose ) {
-    print "SwissProt source id for $file: $sp_source_id\n"
-      . "SpTREMBL source id for $file: $sptr_source_id\n"
-      . 'SpTREMBL protein_evidence > 2 source id '
-      . "for $file: $sptr_non_display_source_id\n"
-      . "SwissProt direct source id for $file: $sp_direct_source_id\n"
-      . "SpTREMBL direct source id for $file: $sptr_direct_source_id\n";
+    print "Source IDs for file '$filename':\n"
+      . "\tSwissProt: " . $source_ids->{sp}  . "\n"
+      . "\tSpTREMBL: " . $source_ids->{sptr} . "\n"
+      . "\tSpTREMBL protein_evidence > 2: " . $source_ids->{sptr_non_display} . "\n"
+      . "\tSwissProt direct: " . $source_ids->{sp_direct} . "\n"
+      . "\tSpTREMBL direct: " . $source_ids->{sptr_direct} . "\n";
   }
 
-  $self->create_xrefs( $sp_source_id,
-                       $sptr_source_id,
-                       $sptr_non_display_source_id,
-                       $species_id,
-                       $file,
-                       $verbose,
-                       $sp_direct_source_id,
-                       $sptr_direct_source_id,
-                       $dbi );
+  $self->create_xrefs({
+                       'filename'     => $filename,
+                       'species_id'   => $species_id,
+                       'source_ids'   => $source_ids,
+                       'verbose'      => $verbose,
+                       'dbi'          => $dbi,
+                     });
 
   if ( defined $release_file ) {
     # Parse Swiss-Prot and SpTrEMBL release info from
@@ -125,15 +123,19 @@ sub run {
     $release_io->close();
 
     # Set releases
-    $self->set_release( $sp_source_id,   $sp_release,   $dbi );
-    $self->set_release( $sptr_source_id, $sptr_release, $dbi );
-    $self->set_release( $sptr_non_display_source_id, $sptr_release,
+    $self->set_release( $source_ids->{'sp'},               $sp_release,
                         $dbi );
-    $self->set_release( $sp_direct_source_id,   $sp_release,   $dbi );
-    $self->set_release( $sptr_direct_source_id, $sptr_release, $dbi );
+    $self->set_release( $source_ids->{'sptr'},             $sptr_release,
+                        $dbi );
+    $self->set_release( $source_ids->{'sptr_non_display'}, $sptr_release,
+                        $dbi );
+    $self->set_release( $source_ids->{'sp_direct'},        $sp_release,
+                        $dbi );
+    $self->set_release( $source_ids->{'sptr_direct'},      $sptr_release,
+                        $dbi );
   }
 
-  return 0;    # successfull
+  return 0;
 } ## end sub run
 
 
@@ -141,11 +143,19 @@ sub run {
 # Parse file into array of xref objects
 
 sub create_xrefs {
-  my ( $self,                  $sp_source_id,
-       $sptr_source_id,        $sptr_non_display_source_id,
-       $species_id,            $file,
-       $verbose,               $sp_direct_source_id,
-       $sptr_direct_source_id, $dbi ) = @_;
+  my ( $self, $arg_ref ) = @_;
+
+  my $file       = $arg_ref->{'filename'};
+  my $species_id = $arg_ref->{'species_id'};
+  my %source_ids = %{ $arg_ref->{'source_ids'} };
+  my $verbose    = $arg_ref->{'verbose'};
+  my $dbi        = $arg_ref->{'dbi'};
+
+  my $sp_source_id               = $source_ids{'sp'};
+  my $sptr_source_id             = $source_ids{'sptr'};
+  my $sptr_non_display_source_id = $source_ids{'sptr_non_display'};
+  my $sp_direct_source_id        = $source_ids{'sp_direct'};
+  my $sptr_direct_source_id      = $source_ids{'sptr_direct'};
 
   my $num_sp               = 0;
   my $num_sptr             = 0;
