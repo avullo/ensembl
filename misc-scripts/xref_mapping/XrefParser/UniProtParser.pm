@@ -104,18 +104,21 @@ sub run {
     while ( defined( my $line = $release_io->getline() ) ) {
       if ( $line =~ m#(UniProtKB/Swiss-Prot Release .*)# ) {
         $sp_release = $1;
-        if ( $verbose ) {
-          print "Swiss-Prot release is '$sp_release'\n";
-        }
       }
       elsif ( $line =~ m#(UniProtKB/TrEMBL Release .*)# ) {
         $sptr_release = $1;
-        if ( $verbose ) {
-          print "SpTrEMBL release is '$sptr_release'\n";
-        }
       }
     }
     $release_io->close();
+
+    if ( $verbose ) {
+      print 'Swiss-Prot release is '
+        . ( defined $sp_release ) ? "'$sp_release'" : 'not defined'
+        . "\n";
+      print 'SpTrEMBL release is '
+        . ( defined $sptr_release ) ? "'$sptr_release'" : 'not defined'
+        . "\n";
+    }
 
     # Set releases
     $self->set_release( $source_ids->{'sp'},               $sp_release,
