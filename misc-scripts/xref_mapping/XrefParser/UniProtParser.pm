@@ -102,10 +102,13 @@ sub run {
                        'dbi'          => $dbi,
                      });
 
+  # Parse Swiss-Prot and SpTrEMBL release info from release file
   if ( defined $release_file ) {
-    # Parse Swiss-Prot and SpTrEMBL release info from
-    # $release_file.
     my $release_io = $self->get_filehandle($release_file);
+    if ( !defined $release_io ) {
+      croak "Could not open release file '${release_file}'";
+    }
+
     while ( defined( my $line = $release_io->getline() ) ) {
       if ( $line =~ m#(UniProtKB/Swiss-Prot Release .*)# ) {
         $sp_release = $1;
