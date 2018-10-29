@@ -28,9 +28,16 @@ package XrefParser::UniProtParser;
 
 use strict;
 use warnings;
+
 use Carp;
+use List::Util;
+use Readonly;
 
 use parent qw( XrefParser::BaseParser );
+
+
+# FIXME: this belongs in BaseParser
+Readonly my $ERR_SOURCE_ID_NOT_FOUND => -1;
 
 
 sub run {
@@ -52,30 +59,31 @@ sub run {
       "Need to pass source_id, species_id, files and rel_file as pairs";
   }
 
-  my $file = @{$files}[0];
+  my $filename = @{$files}[0];
 
-  my ( $sp_source_id,               $sptr_source_id,
-       $sp_release,                 $sptr_release,
-       $sptr_non_display_source_id, $sp_direct_source_id,
-       $sptr_direct_source_id );
+  my ( $sp_release, $sptr_release );
 
-  $sp_source_id =
+  my $source_ids = {};
+  $source_ids->{'sp'} =
     $self->get_source_id_for_source_name( 'Uniprot/SWISSPROT',
                                           'sequence_mapped', $dbi );
-  $sptr_source_id =
+  $source_ids->{'sptr'} =
     $self->get_source_id_for_source_name( 'Uniprot/SPTREMBL',
                                           'sequence_mapped', $dbi );
-
-  $sptr_non_display_source_id =
+  $source_ids->{'sptr_non_display'} =
     $self->get_source_id_for_source_name( 'Uniprot/SPTREMBL',
-                                        'protein_evidence_gt_2', $dbi );
-
-  $sp_direct_source_id =
+                                          'protein_evidence_gt_2', $dbi );
+  $source_ids->{'sp_direct'} =
     $self->get_source_id_for_source_name( 'Uniprot/SWISSPROT',
                                           'direct', $dbi );
-  $sptr_direct_source_id =
-    $self->get_source_id_for_source_name( 'Uniprot/SPTREMBL', 'direct',
-                                          $dbi );
+  $source_ids->{'sptr_direct'} =
+    $self->get_source_id_for_source_name( 'Uniprot/SPTREMBL',
+                                          'direct', $dbi );
+  if ( List::Util::any {
+    $_ == $ERR_SOURCE_ID_NOT_FOUND
+  } values %{ $source_ids } ) {
+    croak 'Failed to acquire all source IDs';
+  }
 
   if ( $verbose ) {
     print "SwissProt source id for $file: $sp_source_id\n"
