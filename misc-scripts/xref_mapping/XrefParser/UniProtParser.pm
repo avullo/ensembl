@@ -94,14 +94,6 @@ sub run {
       . "\tSpTREMBL direct: " . $source_ids->{sptr_direct} . "\n";
   }
 
-  $self->create_xrefs({
-                       'filename'     => $filename,
-                       'species_id'   => $species_id,
-                       'source_ids'   => $source_ids,
-                       'verbose'      => $verbose,
-                       'dbi'          => $dbi,
-                     });
-
   # Parse Swiss-Prot and SpTrEMBL release info from release file
   if ( defined $release_file ) {
     my $release_io = $self->get_filehandle($release_file);
@@ -137,6 +129,15 @@ sub run {
     $self->set_release( $source_ids->{'sptr_direct'},      $sptr_release,
                         $dbi );
   }
+
+  # Now the heavyweight part i.e. xrefs themselves
+  $self->create_xrefs({
+                       'filename'     => $filename,
+                       'species_id'   => $species_id,
+                       'source_ids'   => $source_ids,
+                       'verbose'      => $verbose,
+                       'dbi'          => $dbi,
+                     });
 
   return 0;
 } ## end sub run
