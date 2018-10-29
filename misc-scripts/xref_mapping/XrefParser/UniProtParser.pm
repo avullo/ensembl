@@ -102,10 +102,14 @@ sub run {
     }
 
     while ( defined( my $line = $release_io->getline() ) ) {
-      if ( $line =~ m#(UniProtKB/Swiss-Prot Release .*)# ) {
+      if ( $line =~ m{
+                       (UniProtKB/Swiss-Prot[ ]Release[ ].*)
+                   }msx ) {
         $sp_release = $1;
       }
-      elsif ( $line =~ m#(UniProtKB/TrEMBL Release .*)# ) {
+      elsif ( $line =~ m{
+                          (UniProtKB/TrEMBL[ ]Release[ ].*)
+                      }msx ) {
         $sptr_release = $1;
       }
     }
