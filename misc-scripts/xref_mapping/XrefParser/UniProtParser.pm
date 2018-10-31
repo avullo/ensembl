@@ -422,8 +422,7 @@ sub create_xrefs {
             ; # Remove white spaces that are left over at the end if there was an evidence code
           $depe{LABEL} = $gn_name
             ; # leave name as is, upper/lower case is relevant in gene names
-          $depe{ACCESSION} =
-            $self->get_name( $xref->{ACCESSION}, $depe{LABEL} );
+          $depe{ACCESSION} = $xref->{ACCESSION};
           $gene_name = $depe{ACCESSION};
 
           $depe{SOURCE_NAME}       = "Uniprot_gn";
@@ -631,15 +630,6 @@ sub create_xrefs {
 
   return;
 } ## end sub create_xrefs
-
-
-sub get_name {
-  my $self  = shift;
-  my $acc   = shift;
-  my $label = shift;
-
-  return $acc;
-}
 
 
 1;
